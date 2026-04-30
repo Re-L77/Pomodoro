@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/pomodoro/">
-    <file alias="pomodoro/qmldir">/home/teto/dev/Personal/AFN2/pomodoro/build/pomodoro/pomodoro/qmldir</file>
-  </qresource>
-</RCC>
-

@@ -1,9 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/pomodoro/">
-    <file alias="assets/focus.gif">/home/teto/dev/Personal/AFN2/pomodoro/assets/focus.gif</file>
-    <file alias="assets/break.gif">/home/teto/dev/Personal/AFN2/pomodoro/assets/break.gif</file>
-    <file alias="assets/start.gif">/home/teto/dev/Personal/AFN2/pomodoro/assets/start.gif</file>
-    <file alias="assets/pause.gif">/home/teto/dev/Personal/AFN2/pomodoro/assets/pause.gif</file>
-  </qresource>
-</RCC>
-
