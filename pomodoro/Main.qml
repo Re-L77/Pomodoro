@@ -13,11 +13,15 @@ Window {
     title: "Pomodoro"
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.Window
+    opacity: timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
 
-    onClosing: {
-        settingsWindow.close()
-        dbWindow.close()
-        Qt.quit()
+    Connections {
+        target: root
+        function onClosing(close) {
+            settingsWindow.close()
+            dbWindow.close()
+            Qt.quit()
+        }
     }
 
     PomodoroTimer {
@@ -38,7 +42,6 @@ Window {
             id: mainBackground
             color: "#1a1a2e"
             radius: 12
-            opacity: timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
         }
 
         ColumnLayout {
@@ -71,43 +74,33 @@ Window {
                     anchors.rightMargin: 10
                     spacing: 5
 
-                    Button {
-                        text: "⚙"
-                        width: 35; height: 35
-                        background: Rectangle { color: "transparent" }
-                        contentItem: Text {
-                            text: parent.text; color: "#ffffff"; font.pixelSize: 18
-                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                    Repeater {
+                        model: [
+                            { icon: "⚙", action: "settings", size: 18 },
+                            { icon: "DB", action: "db", size: 13 },
+                            { icon: "−", action: "minimize", size: 20 },
+                            { icon: "✕", action: "close", size: 16 }
+                        ]
+                        Button {
+                            required property var modelData
+                            width: 35; height: 35
+                            background: Rectangle {
+                                color: parent.hovered ? Qt.rgba(1,1,1,0.1) : "transparent"
+                                radius: 8
+                                Behavior on color { ColorAnimation { duration: 120 } }
+                            }
+                            contentItem: Text {
+                                text: modelData.icon; color: "#ffffff"; font.pixelSize: modelData.size
+                                font.bold: modelData.action === "db"
+                                horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                            }
+                            onClicked: {
+                                if (modelData.action === "settings") settingsWindow.show()
+                                else if (modelData.action === "db") dbWindow.show()
+                                else if (modelData.action === "minimize") root.visibility = Window.Minimized
+                                else Qt.quit()
+                            }
                         }
-                        onClicked: settingsWindow.show()
-                    }
-                    Button {
-                        text: "DB"
-                        width: 40; height: 35
-                        background: Rectangle { color: "transparent" }
-                        contentItem: Text { text: parent.text; color: "#ffffff"; font.pixelSize: 14; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
-                        onClicked: dbWindow.show()
-                    }
-
-                    Button {
-                        text: "−"
-                        width: 35; height: 35
-                        background: Rectangle { color: "transparent" }
-                        contentItem: Text {
-                            text: parent.text; color: "#ffffff"; font.pixelSize: 20
-                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                        }
-                        onClicked: root.visibility = Window.Minimized
-                    }
-                    Button {
-                        text: "✕"
-                        width: 35; height: 35
-                        background: Rectangle { color: "transparent" }
-                        contentItem: Text {
-                            text: parent.text; color: "#ffffff"; font.pixelSize: 16
-                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                        }
-                        onClicked: Qt.quit()
                     }
                 }
 
@@ -243,188 +236,108 @@ Window {
                         }
                     }
 
-                    // Botones de control
+                    // Botones de control — square, icon + label below
                     RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 68
-                        spacing: 12
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: 14
 
-                        Button {
-                            text: "✕\nReset"
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 68
-                            background: Rectangle { color: "#c93c3c"; radius: 12 }
-                            contentItem: Text {
-                                text: parent.text; color: "white"; font.pixelSize: 15; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                        // Reset
+                        ColumnLayout {
+                            spacing: 4
+                            Layout.alignment: Qt.AlignHCenter
+                            Button {
+                                Layout.preferredWidth: 64
+                                Layout.preferredHeight: 64
+                                Layout.alignment: Qt.AlignHCenter
+                                background: Rectangle {
+                                    color: parent.hovered ? "#EF5350" : "#D32F2F"
+                                    radius: 14
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
+                                contentItem: Text {
+                                    text: "✕"
+                                    color: "#ffffff"
+                                    font.pixelSize: 22
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                onClicked: timerBackend.resetAll()
                             }
-                            onClicked: timerBackend.resetAll()
+                            Text {
+                                text: "Reset"
+                                color: "#CAC4D0"
+                                font.pixelSize: 12
+                                Layout.alignment: Qt.AlignHCenter
+                            }
                         }
 
-                        Button {
-                            text: timerBackend.controlButtonText
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 68
-                            background: Rectangle { color: "#e4eaf5"; radius: 12 }
-                            contentItem: Text {
-                                text: parent.text; color: "#2d2d30"; font.pixelSize: 15; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                            }
+                        // Start / Pause
+                        ColumnLayout {
+                            spacing: 4
+                            Layout.alignment: Qt.AlignHCenter
 
-                            onClicked: timerBackend.startTimer()
+                            property string btnText: timerBackend.controlButtonText
+                            property bool isPaused: btnText.indexOf("Pause") >= 0
+
+                            Button {
+                                Layout.preferredWidth: 64
+                                Layout.preferredHeight: 64
+                                Layout.alignment: Qt.AlignHCenter
+                                background: Rectangle {
+                                    color: parent.hovered ? "#5C6BC0" : "#9eb6f2"
+                                    radius: 14
+                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                }
+                                contentItem: Text {
+                                    text: parent.parent.isPaused ? "❚❚" : "▶"
+                                    color: "#19192c"
+                                    font.pixelSize: 22
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                onClicked: timerBackend.startTimer()
+                            }
+                            Text {
+                                text: parent.isPaused ? "Pause" : "Start"
+                                color: "#CAC4D0"
+                                font.pixelSize: 12
+                                Layout.alignment: Qt.AlignHCenter
+                            }
                         }
 
-                        Button {
-                            text: "⏭\nSkip"
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 68
-                            background: Rectangle { color: "#6b7280"; radius: 12 }
-                            contentItem: Text {
-                                text: parent.text; color: "white"; font.pixelSize: 15; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                            }
-                            onClicked: timerBackend.skipTimer()
-                        }
-                    }
-
-                    // settings popup (opened by toolbar button)
-                    Popup {
-                        id: settingsDialog
-                        modal: true
-                        x: parent.width/2 - width/2
-                        y: parent.height/2 - height/2
-                        visible: false
-
-                        contentItem: ColumnLayout {
-                            width: 520
-                            spacing: 10
-                            anchors.fill: parent
-                            anchors.margins: 12
-                            // Title bar
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Text { text: "Settings"; color: "#ffffff"; font.pixelSize: 18 }
-                                Item { Layout.fillWidth: true }
-                                Button { text: "✕"; onClicked: settingsDialog.close() }
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                color: "#1a1a1f"
-                                radius: 8
-                                height: 8
-                                opacity: 0.0
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Text { text: "Focus (s):"; color: "#cccccc" }
-                                SpinBox { id: dlgFocus; from:1; to:3600; value: timerBackend.focusDurationSeconds; stepSize:60 }
-                                Text { text: "Short break (s):"; color: "#cccccc" }
-                                SpinBox { id: dlgShort; from:1; to:3600; value: timerBackend.shortBreakDurationSeconds; stepSize:60 }
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Text { text: "Long break (s):"; color: "#cccccc" }
-                                SpinBox { id: dlgLong; from:1; to:3600; value: timerBackend.longBreakDurationSeconds; stepSize:60 }
-                                Text { text: "Sound:"; color: "#cccccc" }
-                                Switch { id: dlgSound; checked: timerBackend.notificationSoundEnabled }
-                            }
-
-                            // GIF selectors
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Button { text: "Choose Focus GIF"; onClicked: focusFileDialog.open() }
-                                Button { text: "Choose Short GIF"; onClicked: shortFileDialog.open() }
-                                Button { text: "Choose Long GIF"; onClicked: longFileDialog.open() }
-                            }
-
-                            FileDialog {
-                                id: focusFileDialog
-                                title: "Select Focus GIF"
-                                nameFilters: ["GIF files (*.gif)"]
-                                onAccepted: {
-                                    timerBackend.setAssetSources(fileUrl, timerBackend.shortBreakGifSource, timerBackend.longBreakGifSource, timerBackend.startGifSource, timerBackend.pauseGifSource)
+                        // Skip
+                        ColumnLayout {
+                            spacing: 4
+                            Layout.alignment: Qt.AlignHCenter
+                            Button {
+                                Layout.preferredWidth: 64
+                                Layout.preferredHeight: 64
+                                Layout.alignment: Qt.AlignHCenter
+                                background: Rectangle {
+                                    color: parent.hovered ? "#78909C" : "#546E7A"
+                                    radius: 14
+                                    Behavior on color { ColorAnimation { duration: 150 } }
                                 }
-                            }
-
-                            FileDialog {
-                                id: shortFileDialog
-                                title: "Select Short Break GIF"
-                                nameFilters: ["GIF files (*.gif)"]
-                                onAccepted: {
-                                    timerBackend.setAssetSources(timerBackend.focusGifSource, fileUrl, timerBackend.longBreakGifSource, timerBackend.startGifSource, timerBackend.pauseGifSource)
+                                contentItem: Text {
+                                    text: "⏭"
+                                    color: "#ffffff"
+                                    font.pixelSize: 22
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
                                 }
+                                onClicked: timerBackend.skipTimer()
                             }
-
-                            FileDialog {
-                                id: longFileDialog
-                                title: "Select Long Break GIF"
-                                nameFilters: ["GIF files (*.gif)"]
-                                onAccepted: {
-                                    timerBackend.setAssetSources(timerBackend.focusGifSource, timerBackend.shortBreakGifSource, fileUrl, timerBackend.startGifSource, timerBackend.pauseGifSource)
-                                }
-                            }
-
-                            RowLayout {
-                                Layout.fillWidth: true
-                                spacing: 8
-                                Button {
-                                    text: "Save"
-                                    background: Rectangle { color: "#7c4dff"; radius: 8 }
-                                    onClicked: {
-                                        timerBackend.setFocusDurationSeconds(dlgFocus.value);
-                                        timerBackend.setShortBreakDurationSeconds(dlgShort.value);
-                                        timerBackend.setLongBreakDurationSeconds(dlgLong.value);
-                                        timerBackend.notificationSoundEnabled = dlgSound.checked;
-                                        timerBackend.saveConfiguration();
-                                        settingsDialog.close();
-                                    }
-                                }
-                                Button { text: "Cancel"; onClicked: settingsDialog.close() }
-                                Button { text: "View DB"; onClicked: dbDialog.open() }
-                                Label { text: "DB: " + timerBackend.databasePath(); color: "#888888" }
+                            Text {
+                                text: "Skip"
+                                color: "#CAC4D0"
+                                font.pixelSize: 12
+                                Layout.alignment: Qt.AlignHCenter
                             }
                         }
                     }
 
-                    // DB viewer popup
-                    Popup {
-                        id: dbDialog
-                        modal: true
-                        visible: false
-                        x: parent.width/2 - width/2
-                        y: parent.height/2 - height/2
 
-                        contentItem: ColumnLayout {
-                            width: 520
-                            spacing: 8
-                            RowLayout {
-                                Layout.fillWidth: true
-                                Text { text: "Database - Recent Sessions"; color: "#ffffff"; font.pixelSize: 16 }
-                                Item { Layout.fillWidth: true }
-                                Button { text: "✕"; onClicked: dbDialog.close() }
-                            }
-                            ListView {
-                                id: dbList
-                                model: timerBackend.recentSessionRecords(50)
-                                delegate: Rectangle {
-                                    width: dbList.width
-                                    height: implicitHeight
-                                    color: "transparent"
-                                    Column {
-                                        spacing: 2
-                                        Text { text: "#" + model.id + " " + model.from_state + " → " + model.to_state; color: "#ffffff" }
-                                        Text { text: "Started: " + model.started_at + "  Ended: " + model.ended_at; color: "#aaaaaa"; font.pixelSize: 12 }
-                                        Text { text: "Cycle: " + model.cycle + "  Duration(s): " + model.duration_seconds + "  Completed: " + (model.completed == 1 ? "yes" : "no"); color: "#888888"; font.pixelSize: 12 }
-                                        Rectangle { height: 1; color: "#2a2a2a"; Layout.fillWidth: true }
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }

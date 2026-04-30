@@ -10,7 +10,8 @@ Window {
     height: 420
     title: "Settings"
     flags: Qt.Window
-    opacity: 0.95
+    color: "#1a1a2e"
+    opacity: timerBackend && timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
 
     ColumnLayout {
         anchors.fill: parent
