@@ -247,12 +247,12 @@ Window {
                             spacing: 4
                             Layout.alignment: Qt.AlignHCenter
                             Button {
-                                Layout.preferredWidth: 64
-                                Layout.preferredHeight: 64
+                                Layout.preferredWidth: 75
+                                Layout.preferredHeight: 75
                                 Layout.alignment: Qt.AlignHCenter
                                 background: Rectangle {
                                     color: parent.hovered ? "#EF5350" : "#D32F2F"
-                                    radius: 14
+                                    radius: 12
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                                 contentItem: Text {
@@ -281,12 +281,12 @@ Window {
                             property bool isPaused: btnText.indexOf("Pause") >= 0
 
                             Button {
-                                Layout.preferredWidth: 64
-                                Layout.preferredHeight: 64
+                                Layout.preferredWidth: 75
+                                Layout.preferredHeight: 75
                                 Layout.alignment: Qt.AlignHCenter
                                 background: Rectangle {
                                     color: parent.hovered ? "#5C6BC0" : "#9eb6f2"
-                                    radius: 14
+                                    radius: 10
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                                 contentItem: Text {
@@ -311,12 +311,12 @@ Window {
                             spacing: 4
                             Layout.alignment: Qt.AlignHCenter
                             Button {
-                                Layout.preferredWidth: 64
-                                Layout.preferredHeight: 64
+                                Layout.preferredWidth: 75
+                                Layout.preferredHeight: 75
                                 Layout.alignment: Qt.AlignHCenter
                                 background: Rectangle {
                                     color: parent.hovered ? "#78909C" : "#546E7A"
-                                    radius: 14
+                                    radius: 10
                                     Behavior on color { ColorAnimation { duration: 150 } }
                                 }
                                 contentItem: Text {
