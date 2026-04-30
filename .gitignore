@@ -1,0 +1,78 @@
+# ================================
+# Build directories
+# ================================
+build/
+**/build/
+**/Desktop-Debug/
+
+# ================================
+# CMake
+# ================================
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# ================================
+# Ninja
+# ================================
+.ninja_deps
+.ninja_log
+build.ninja
+
+# ================================
+# Qt
+# ================================
+.qt/
+.rcc/
+.qtcreator/
+*_autogen/
+*_qmltyperegistrations.cpp
+meta_types/
+qmltypes/
+*.qmlc
+*.jsc
+
+# ================================
+# Compiled binaries & objects
+# ================================
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+*.out
+apppomodoro
+moc_*
+qrc_*
+
+# ================================
+# IDE & Editor
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.kate-swp
+*.user
+*.user.*
+CMakeLists.txt.user
+
+# ================================
+# OS generated files
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# Misc
+# ================================
+compile_commands.json
+.cache/
