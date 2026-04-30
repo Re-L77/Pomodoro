@@ -605,3 +605,6 @@ void PomodoroTimer::resumeTimer()
 **Versión**: 0.1 (Testing)
 **Autor**: Tu Nombre
 **Licencia**: MIT
+
+
+---
