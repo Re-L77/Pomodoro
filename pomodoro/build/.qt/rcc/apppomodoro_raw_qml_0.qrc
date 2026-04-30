@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="/qt/qml/pomodoro/">
+    <file alias="Main.qml">/home/teto/dev/Personal/AFN2/pomodoro/Main.qml</file>
+    <file alias="pomodoro/SettingsWindow.qml">/home/teto/dev/Personal/AFN2/pomodoro/pomodoro/SettingsWindow.qml</file>
+    <file alias="pomodoro/DbViewerWindow.qml">/home/teto/dev/Personal/AFN2/pomodoro/pomodoro/DbViewerWindow.qml</file>
+  </qresource>
+</RCC>
+

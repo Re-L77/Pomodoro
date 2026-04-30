@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/pomodoro">/home/teto/dev/Personal/AFN2/pomodoro/build/Desktop-Debug/pomodoro</file>
+
+  </qresource>
+</RCC>

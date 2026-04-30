@@ -1,0 +1,15 @@
+# Hashes of file build rules.
+3a7c6dc9a2425a09d5031c2ac2f7dd84 .qt/.qmlls.build.ini
+6d1524ec4e5f8c2623830622478c7080 .qt/apppomodoro_qml.txt
+331c3b3930c64b29e4e3670522178d67 .qt/apppomodoro_res.txt
+ca5dc268550be5823ec76919da044ca9 .qt/qml_imports/apppomodoro_build.cmake
+429abb37925050c0c47b67738df0a624 .qt/rcc/qrc_apppomodoro_raw_qml_0.cpp
+0c619e60256fd6dbd82897b4ff6495bc .qt/rcc/qrc_apppomodoro_raw_res_0.cpp
+fffeab785c9de559b0ba99378c520313 .qt/rcc/qrc_qmake_pomodoro.cpp
+2afab63500a1941f0961c9726aba1292 .rcc/qmlcache/apppomodoro_Main_qml.cpp
+0914eb95649bbf2e6b2aa0bd1b91fab7 .rcc/qmlcache/apppomodoro_qmlcache_loader.cpp
+886bc51e1f4fb325801c445e2733cfaa apppomodoro_autogen/timestamp
+5eda0e95ce6f0286d48b9e23e9749301 apppomodoro_qmltyperegistrations.cpp
+4ecb0a152ce6468ee80da051d650a2e2 meta_types/apppomodoro_json_file_list.txt
+bfbef616094cc62f98d3034f4e1c22cc meta_types/qt6apppomodoro_metatypes.json
+36a2711f0c2f869d0361bef07850fb5f meta_types/qt6apppomodoro_metatypes.json.gen

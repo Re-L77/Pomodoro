@@ -1,0 +1,6 @@
+module pomodoro
+typeinfo apppomodoro.qmltypes
+prefer :/qt/qml/pomodoro/
+Main 254.0 Main.qml
+depends QtQuick
+

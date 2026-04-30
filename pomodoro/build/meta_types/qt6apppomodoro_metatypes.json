@@ -1,0 +1,540 @@
+[
+    {
+        "classes": [
+            {
+                "classInfos": [
+                    {
+                        "name": "QML.Element",
+                        "value": "auto"
+                    }
+                ],
+                "className": "PomodoroTimer",
+                "lineNumber": 14,
+                "methods": [
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "seconds",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 9,
+                        "lineNumber": 60,
+                        "name": "setFocusDurationSeconds",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "seconds",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 10,
+                        "lineNumber": 61,
+                        "name": "setShortBreakDurationSeconds",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "seconds",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 11,
+                        "lineNumber": 62,
+                        "name": "setLongBreakDurationSeconds",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "focusGif",
+                                "type": "QUrl"
+                            },
+                            {
+                                "name": "shortBreakGif",
+                                "type": "QUrl"
+                            },
+                            {
+                                "name": "longBreakGif",
+                                "type": "QUrl"
+                            },
+                            {
+                                "name": "startGif",
+                                "type": "QUrl"
+                            },
+                            {
+                                "name": "pauseGif",
+                                "type": "QUrl"
+                            }
+                        ],
+                        "index": 12,
+                        "lineNumber": 63,
+                        "name": "setAssetSources",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 13,
+                        "lineNumber": 64,
+                        "name": "saveConfiguration",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 14,
+                        "lineNumber": 65,
+                        "name": "reloadConfiguration",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 15,
+                        "isConst": true,
+                        "lineNumber": 66,
+                        "name": "databasePath",
+                        "returnType": "QString"
+                    },
+                    {
+                        "access": "public",
+                        "index": 16,
+                        "lineNumber": 67,
+                        "name": "clearHistory",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "path",
+                                "type": "QString"
+                            }
+                        ],
+                        "index": 17,
+                        "lineNumber": 68,
+                        "name": "exportHistoryCsv",
+                        "returnType": "bool"
+                    },
+                    {
+                        "access": "public",
+                        "arguments": [
+                            {
+                                "name": "limit",
+                                "type": "int"
+                            }
+                        ],
+                        "index": 18,
+                        "isConst": true,
+                        "lineNumber": 69,
+                        "name": "recentSessionRecords",
+                        "returnType": "QVariantList"
+                    },
+                    {
+                        "access": "public",
+                        "index": 19,
+                        "isCloned": true,
+                        "isConst": true,
+                        "lineNumber": 69,
+                        "name": "recentSessionRecords",
+                        "returnType": "QVariantList"
+                    },
+                    {
+                        "access": "public",
+                        "index": 20,
+                        "lineNumber": 71,
+                        "name": "startTimer",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 21,
+                        "lineNumber": 72,
+                        "name": "resetTimer",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 22,
+                        "lineNumber": 73,
+                        "name": "resetAll",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 23,
+                        "lineNumber": 74,
+                        "name": "skipTimer",
+                        "returnType": "void"
+                    }
+                ],
+                "object": true,
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 0,
+                        "lineNumber": 19,
+                        "name": "timeDisplay",
+                        "notify": "timeDisplayChanged",
+                        "override": false,
+                        "read": "timeDisplay",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 1,
+                        "lineNumber": 20,
+                        "name": "statusText",
+                        "notify": "statusTextChanged",
+                        "override": false,
+                        "read": "statusText",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 2,
+                        "lineNumber": 21,
+                        "name": "controlButtonText",
+                        "notify": "controlButtonTextChanged",
+                        "override": false,
+                        "read": "controlButtonText",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QString",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 3,
+                        "lineNumber": 22,
+                        "name": "sweepAngle",
+                        "notify": "sweepAngleChanged",
+                        "override": false,
+                        "read": "sweepAngle",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "double",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 4,
+                        "lineNumber": 23,
+                        "name": "currentCycle",
+                        "notify": "currentCycleChanged",
+                        "override": false,
+                        "read": "currentCycle",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 5,
+                        "lineNumber": 24,
+                        "name": "currentGifSource",
+                        "notify": "currentGifSourceChanged",
+                        "override": false,
+                        "read": "currentGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 6,
+                        "lineNumber": 25,
+                        "name": "focusGifSource",
+                        "override": false,
+                        "read": "focusGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 7,
+                        "lineNumber": 26,
+                        "name": "shortBreakGifSource",
+                        "override": false,
+                        "read": "shortBreakGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 8,
+                        "lineNumber": 27,
+                        "name": "longBreakGifSource",
+                        "override": false,
+                        "read": "longBreakGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 9,
+                        "lineNumber": 28,
+                        "name": "startGifSource",
+                        "override": false,
+                        "read": "startGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 10,
+                        "lineNumber": 29,
+                        "name": "pauseGifSource",
+                        "override": false,
+                        "read": "pauseGifSource",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "QUrl",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 11,
+                        "lineNumber": 30,
+                        "name": "focusDurationSeconds",
+                        "override": false,
+                        "read": "focusDurationSeconds",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 12,
+                        "lineNumber": 31,
+                        "name": "shortBreakDurationSeconds",
+                        "override": false,
+                        "read": "shortBreakDurationSeconds",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 13,
+                        "lineNumber": 32,
+                        "name": "longBreakDurationSeconds",
+                        "override": false,
+                        "read": "longBreakDurationSeconds",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 14,
+                        "lineNumber": 33,
+                        "name": "notificationSoundEnabled",
+                        "notify": "notificationSettingsChanged",
+                        "override": false,
+                        "read": "notificationSoundEnabled",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "bool",
+                        "user": false,
+                        "virtual": false,
+                        "write": "setNotificationSoundEnabled"
+                    },
+                    {
+                        "constant": true,
+                        "designable": true,
+                        "final": false,
+                        "index": 15,
+                        "lineNumber": 34,
+                        "name": "notificationDurationMs",
+                        "override": false,
+                        "read": "notificationDurationMs",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "int",
+                        "user": false,
+                        "virtual": false
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "index": 16,
+                        "lineNumber": 35,
+                        "name": "windowOpacity",
+                        "notify": "windowOpacityChanged",
+                        "override": false,
+                        "read": "windowOpacity",
+                        "required": false,
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "double",
+                        "user": false,
+                        "virtual": false,
+                        "write": "setWindowOpacity"
+                    }
+                ],
+                "qualifiedClassName": "PomodoroTimer",
+                "signals": [
+                    {
+                        "access": "public",
+                        "index": 0,
+                        "lineNumber": 77,
+                        "name": "timeDisplayChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 1,
+                        "lineNumber": 78,
+                        "name": "statusTextChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 2,
+                        "lineNumber": 79,
+                        "name": "controlButtonTextChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 3,
+                        "lineNumber": 80,
+                        "name": "sweepAngleChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 4,
+                        "lineNumber": 81,
+                        "name": "currentCycleChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 5,
+                        "lineNumber": 82,
+                        "name": "currentGifSourceChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 6,
+                        "lineNumber": 83,
+                        "name": "notificationSettingsChanged",
+                        "returnType": "void"
+                    },
+                    {
+                        "access": "public",
+                        "index": 7,
+                        "lineNumber": 84,
+                        "name": "windowOpacityChanged",
+                        "returnType": "void"
+                    }
+                ],
+                "slots": [
+                    {
+                        "access": "private",
+                        "index": 8,
+                        "lineNumber": 87,
+                        "name": "tick",
+                        "returnType": "void"
+                    }
+                ],
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "pomodorotimer.h",
+        "outputRevision": 69
+    }
+]
