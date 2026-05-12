@@ -4,6 +4,12 @@ Aplicación de escritorio para la técnica Pomodoro construida con **Qt6**, **QM
 
 ---
 
+## 📸 Preview
+
+![Pomodoro Timer](docs/screenshot.png)
+
+---
+
 ## ✨ Características
 
 - Temporizador automático con anillo de progreso visual
