@@ -5,6 +5,7 @@ Una aplicación moderna de técnica Pomodoro con interfaz gráfica usando **Qt6*
 ## 📋 Tabla de Contenidos
 
 1. [¿Qué es la Técnica Pomodoro?](#qué-es-la-técnica-pomodoro)
+0. [Assets](#assets)
 2. [Características](#características)
 3. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
 4. [Conceptos de C++ Utilizados](#conceptos-de-c-utilizados)
@@ -12,6 +13,24 @@ Una aplicación moderna de técnica Pomodoro con interfaz gráfica usando **Qt6*
 6. [Compilación y Ejecución](#compilación-y-ejecución)
 7. [Cómo Funciona el Código](#cómo-funciona-el-código)
 8. [Extensiones y Mejoras](#extensiones-y-mejoras)
+
+---
+
+## 🖼️ Assets
+
+Los archivos de la carpeta `assets/` **no están incluidos en el repositorio** porque pertenecen a sus respectivos autores.
+
+Para que la app funcione debes colocar los siguientes archivos manualmente en `pomodoro/assets/`:
+
+| Archivo | Descripción | Fuente |
+|---|---|---|
+| `focus.gif` | GIF animado para sesión de trabajo | [circlecan](https://circlecan.blogspot.com/p/gif-page-3.html) — contacto: circlecan33@gmail.com |
+| `break.gif` | GIF animado para descanso | [circlecan](https://circlecan.blogspot.com/p/gif-page-3.html) — contacto: circlecan33@gmail.com |
+| `start.gif` | GIF animado para pantalla inicial | [circlecan](https://circlecan.blogspot.com/p/gif-page-3.html) — contacto: circlecan33@gmail.com |
+| `pause.gif` | GIF animado para pausa | [circlecan](https://circlecan.blogspot.com/p/gif-page-3.html) — contacto: circlecan33@gmail.com |
+| `tuturu_1.mp3` | Sonido de notificación al terminar un ciclo | Descargado de una página de button sounds |
+
+> Los GIFs son obra de **circlecan** ([@circlecan33](https://circlecan.blogspot.com)). Si deseas usarlos, considera contactar al autor para pedir permiso.
 
 ---
 

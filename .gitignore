@@ -76,3 +76,8 @@ desktop.ini
 # ================================
 compile_commands.json
 .cache/
+
+# ================================
+# Assets (third-party, not redistributable)
+# ================================
+pomodoro/assets/
