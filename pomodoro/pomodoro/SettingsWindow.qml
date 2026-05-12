@@ -14,7 +14,6 @@ Window {
     title: "Settings"
     flags: Qt.Window
     color: "#1C1B1F"
-    opacity: timerBackend && timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
 
     // ── MD3 Color Tokens ──
     readonly property color md3Surface: "#1C1B1F"
@@ -240,6 +239,26 @@ Window {
                                 Layout.preferredWidth: 40
                             }
                         }
+
+                        Rectangle { Layout.fillWidth: true; height: 1; color: md3OutlineVariant }
+
+                        RowLayout {
+                            spacing: 12; Layout.fillWidth: true
+                            Text { text: "Font size"; color: md3OnSurface }
+                            Slider {
+                                id: fontSizeSlider
+                                from: 10; to: 24
+                                value: timerBackend ? timerBackend.fontSize : 14
+                                stepSize: 1
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                text: Math.round(fontSizeSlider.value) + "px"
+                                color: md3OnSurfaceVariant
+                                font.pixelSize: 13
+                                Layout.preferredWidth: 40
+                            }
+                        }
                     }
                 }
             }
@@ -289,9 +308,10 @@ Window {
                     timerBackend.setFocusDurationSeconds(sFocus.value)
                     timerBackend.setShortBreakDurationSeconds(sShort.value)
                     timerBackend.setLongBreakDurationSeconds(sLong.value)
-                    timerBackend.transparencyEnabled = transparencyEnabledSwitch.checked
                     timerBackend.notificationSoundEnabled = sSound.checked
+                    timerBackend.transparencyEnabled = transparencyEnabledSwitch.checked
                     timerBackend.windowOpacity = transparencySlider.value
+                    timerBackend.fontSize = Math.round(fontSizeSlider.value)
                     timerBackend.saveConfiguration()
                     saveNotification.open()
                 }

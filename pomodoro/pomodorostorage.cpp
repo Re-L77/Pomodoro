@@ -129,6 +129,24 @@ bool PomodoroStorage::ensureSchema(QString *errorMessage)
         return false;
     }
 
+    const char *eventLogSql =
+        "CREATE TABLE IF NOT EXISTS event_log ("
+        " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        " timestamp TEXT NOT NULL,"
+        " action TEXT NOT NULL,"
+        " detail TEXT,"
+        " cycle INTEGER NOT NULL"
+        ")";
+
+    if (!query.exec(QString::fromLatin1(eventLogSql)))
+    {
+        if (errorMessage)
+        {
+            *errorMessage = query.lastError().text();
+        }
+        return false;
+    }
+
     return true;
 }
 
@@ -198,6 +216,7 @@ bool PomodoroStorage::loadSettings(Settings *settings, QString *errorMessage)
     settings->transparencyEnabled = settingValue(QStringLiteral("transparency_enabled"), settings->transparencyEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage).toInt() != 0;
     settings->notificationSoundEnabled = settingValue(QStringLiteral("notification_sound_enabled"), settings->notificationSoundEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage).toInt() != 0;
     settings->windowOpacity = settingValue(QStringLiteral("window_opacity"), QString::number(settings->windowOpacity), errorMessage).toDouble();
+    settings->fontSize = settingValue(QStringLiteral("font_size"), QString::number(settings->fontSize), errorMessage).toInt();
     settings->focusGifSource = settingValueToUrl(settingValue(QStringLiteral("focus_gif_source"), urlToSettingValue(settings->focusGifSource), errorMessage));
     settings->shortBreakGifSource = settingValueToUrl(settingValue(QStringLiteral("short_break_gif_source"), urlToSettingValue(settings->shortBreakGifSource), errorMessage));
     settings->longBreakGifSource = settingValueToUrl(settingValue(QStringLiteral("long_break_gif_source"), urlToSettingValue(settings->longBreakGifSource), errorMessage));
@@ -223,7 +242,7 @@ bool PomodoroStorage::saveSettings(const Settings &settings, QString *errorMessa
         return false;
     }
 
-    const bool success = upsertSetting(QStringLiteral("focus_duration_seconds"), QString::number(settings.focusDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("short_break_duration_seconds"), QString::number(settings.shortBreakDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("long_break_duration_seconds"), QString::number(settings.longBreakDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("notification_duration_ms"), QString::number(settings.notificationDurationMs), errorMessage) && upsertSetting(QStringLiteral("transparency_enabled"), settings.transparencyEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage) && upsertSetting(QStringLiteral("notification_sound_enabled"), settings.notificationSoundEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage) && upsertSetting(QStringLiteral("window_opacity"), QString::number(settings.windowOpacity), errorMessage) && upsertSetting(QStringLiteral("focus_gif_source"), urlToSettingValue(settings.focusGifSource), errorMessage) && upsertSetting(QStringLiteral("short_break_gif_source"), urlToSettingValue(settings.shortBreakGifSource), errorMessage) && upsertSetting(QStringLiteral("long_break_gif_source"), urlToSettingValue(settings.longBreakGifSource), errorMessage) && upsertSetting(QStringLiteral("start_gif_source"), urlToSettingValue(settings.startGifSource), errorMessage) && upsertSetting(QStringLiteral("pause_gif_source"), urlToSettingValue(settings.pauseGifSource), errorMessage);
+    const bool success = upsertSetting(QStringLiteral("focus_duration_seconds"), QString::number(settings.focusDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("short_break_duration_seconds"), QString::number(settings.shortBreakDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("long_break_duration_seconds"), QString::number(settings.longBreakDurationSeconds), errorMessage) && upsertSetting(QStringLiteral("notification_duration_ms"), QString::number(settings.notificationDurationMs), errorMessage) && upsertSetting(QStringLiteral("transparency_enabled"), settings.transparencyEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage) && upsertSetting(QStringLiteral("notification_sound_enabled"), settings.notificationSoundEnabled ? QStringLiteral("1") : QStringLiteral("0"), errorMessage) && upsertSetting(QStringLiteral("window_opacity"), QString::number(settings.windowOpacity), errorMessage) && upsertSetting(QStringLiteral("font_size"), QString::number(settings.fontSize), errorMessage) && upsertSetting(QStringLiteral("focus_gif_source"), urlToSettingValue(settings.focusGifSource), errorMessage) && upsertSetting(QStringLiteral("short_break_gif_source"), urlToSettingValue(settings.shortBreakGifSource), errorMessage) && upsertSetting(QStringLiteral("long_break_gif_source"), urlToSettingValue(settings.longBreakGifSource), errorMessage) && upsertSetting(QStringLiteral("start_gif_source"), urlToSettingValue(settings.startGifSource), errorMessage) && upsertSetting(QStringLiteral("pause_gif_source"), urlToSettingValue(settings.pauseGifSource), errorMessage);
 
     if (success)
     {
@@ -371,6 +390,135 @@ bool PomodoroStorage::exportSessionRecordsCsv(const QString &path, QString *erro
     }
 
     out.close();
+    return true;
+}
+
+bool PomodoroStorage::saveTimerState(const TimerState &state, QString *errorMessage)
+{
+    if (!m_database.isOpen() && !initialize(errorMessage))
+    {
+        return false;
+    }
+
+    return upsertSetting(QStringLiteral("state_is_focus_mode"), state.isFocusMode ? QStringLiteral("1") : QStringLiteral("0"), errorMessage)
+        && upsertSetting(QStringLiteral("state_current_cycle"), QString::number(state.currentCycle), errorMessage)
+        && upsertSetting(QStringLiteral("state_time_left"), QString::number(state.timeLeft), errorMessage)
+        && upsertSetting(QStringLiteral("state_total_seconds"), QString::number(state.totalSeconds), errorMessage)
+        && upsertSetting(QStringLiteral("state_status_text"), state.statusText, errorMessage)
+        && upsertSetting(QStringLiteral("state_running"), state.running ? QStringLiteral("1") : QStringLiteral("0"), errorMessage)
+        && upsertSetting(QStringLiteral("state_paused"), state.paused ? QStringLiteral("1") : QStringLiteral("0"), errorMessage);
+}
+
+bool PomodoroStorage::loadTimerState(TimerState *state, QString *errorMessage)
+{
+    if (!state)
+    {
+        if (errorMessage)
+            *errorMessage = QStringLiteral("TimerState pointer is null");
+        return false;
+    }
+
+    if (!m_database.isOpen() && !initialize(errorMessage))
+    {
+        return false;
+    }
+
+    // Check if state has ever been saved
+    const QString check = settingValue(QStringLiteral("state_is_focus_mode"), QStringLiteral(""), errorMessage);
+    if (check.isEmpty())
+    {
+        // No saved state — use defaults
+        return true;
+    }
+
+    state->isFocusMode = settingValue(QStringLiteral("state_is_focus_mode"), QStringLiteral("1"), errorMessage).toInt() != 0;
+    state->currentCycle = settingValue(QStringLiteral("state_current_cycle"), QStringLiteral("1"), errorMessage).toInt();
+    state->timeLeft = settingValue(QStringLiteral("state_time_left"), QStringLiteral("0"), errorMessage).toInt();
+    state->totalSeconds = settingValue(QStringLiteral("state_total_seconds"), QStringLiteral("0"), errorMessage).toInt();
+    state->statusText = settingValue(QStringLiteral("state_status_text"), QStringLiteral("Work Session"), errorMessage);
+    state->running = settingValue(QStringLiteral("state_running"), QStringLiteral("0"), errorMessage).toInt() != 0;
+    state->paused = settingValue(QStringLiteral("state_paused"), QStringLiteral("0"), errorMessage).toInt() != 0;
+
+    return true;
+}
+
+bool PomodoroStorage::insertEventLog(const QString &action, const QString &detail, int cycle, QString *errorMessage)
+{
+    if (!m_database.isOpen() && !initialize(errorMessage))
+    {
+        return false;
+    }
+
+    QSqlQuery query(m_database);
+    query.prepare(QStringLiteral(
+        "INSERT INTO event_log(timestamp, action, detail, cycle) "
+        "VALUES(:timestamp, :action, :detail, :cycle)"));
+    query.bindValue(QStringLiteral(":timestamp"), QDateTime::currentDateTimeUtc().toString(Qt::ISODateWithMs));
+    query.bindValue(QStringLiteral(":action"), action);
+    query.bindValue(QStringLiteral(":detail"), detail);
+    query.bindValue(QStringLiteral(":cycle"), cycle);
+
+    if (!query.exec())
+    {
+        if (errorMessage)
+            *errorMessage = query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+QVariantList PomodoroStorage::recentEventLogs(int limit, QString *errorMessage) const
+{
+    QVariantList results;
+
+    if (!m_database.isOpen())
+    {
+        if (!const_cast<PomodoroStorage *>(this)->initialize(errorMessage))
+            return results;
+    }
+
+    QSqlQuery query(m_database);
+    query.prepare(QStringLiteral(
+        "SELECT id, timestamp, action, detail, cycle FROM event_log ORDER BY id DESC LIMIT :limit"));
+    query.bindValue(QStringLiteral(":limit"), limit);
+
+    if (!query.exec())
+    {
+        if (errorMessage)
+            *errorMessage = query.lastError().text();
+        return results;
+    }
+
+    while (query.next())
+    {
+        QVariantMap row;
+        row.insert("id", query.value(0));
+        row.insert("timestamp", query.value(1));
+        row.insert("action", query.value(2));
+        row.insert("detail", query.value(3));
+        row.insert("cycle", query.value(4));
+        results.append(row);
+    }
+
+    return results;
+}
+
+bool PomodoroStorage::clearEventLogs(QString *errorMessage)
+{
+    if (!m_database.isOpen() && !const_cast<PomodoroStorage *>(this)->initialize(errorMessage))
+    {
+        return false;
+    }
+
+    QSqlQuery query(m_database);
+    if (!query.exec(QStringLiteral("DELETE FROM event_log")))
+    {
+        if (errorMessage)
+            *errorMessage = query.lastError().text();
+        return false;
+    }
+
     return true;
 }
 

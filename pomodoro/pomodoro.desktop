@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Pomodoro
+Comment=Pomodoro timer with focus tracking
+Exec=/home/teto/.local/bin/pomodoro
+Icon=pomodoro
+Terminal=false
+Type=Application
+Categories=Utility;
+Keywords=pomodoro;timer;focus;productivity;
+StartupWMClass=apppomodoro

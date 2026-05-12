@@ -8,41 +8,84 @@ Window {
     property var timerBackend
 
     visible: false
-    width: 750
-    height: 560
+    width: 780
+    height: 580
     title: "Session Records"
     flags: Qt.Window
-    color: "#0d0d1a"
-    opacity: timerBackend && timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
+    color: "#1C1B1F"
+
+    // MD3 tokens
+    readonly property color md3Surface: "#1C1B1F"
+    readonly property color md3SurfaceContainer: "#211F26"
+    readonly property color md3SurfaceContainerHigh: "#2B2930"
+    readonly property color md3OnSurface: "#E6E1E5"
+    readonly property color md3OnSurfaceVariant: "#CAC4D0"
+    readonly property color md3Primary: "#D0BCFF"
+    readonly property color md3PrimaryContainer: "#4F378B"
+    readonly property color md3Outline: "#938F99"
+    readonly property color md3OutlineVariant: "#49454F"
+    readonly property color md3Error: "#F2B8B5"
+    readonly property color md3ErrorContainer: "#8C1D18"
+
+    property int currentTab: 0 // 0 = Sessions, 1 = Events
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 14
         spacing: 8
 
-        // ── Header ──
+        // ── Header + Tab bar ──
         RowLayout {
             Layout.fillWidth: true
             spacing: 10
 
             Text {
-                text: "📋 Session Logs"
+                text: "📋 Logs"
                 font.pixelSize: 20
                 font.bold: true
-                color: "#e0e0e0"
+                color: md3OnSurface
             }
 
-            // Record count badge
+            // Tab pills
+            RowLayout {
+                spacing: 4
+
+                Repeater {
+                    model: ["Sessions", "Events"]
+                    Button {
+                        required property int index
+                        required property string modelData
+                        implicitHeight: 28
+                        background: Rectangle {
+                            color: currentTab === index ? md3PrimaryContainer : (parent.hovered ? md3SurfaceContainerHigh : "transparent")
+                            radius: 14
+                            Behavior on color { ColorAnimation { duration: 150 } }
+                        }
+                        contentItem: Text {
+                            text: modelData
+                            color: currentTab === index ? md3Primary : md3OnSurfaceVariant
+                            font.pixelSize: 12
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
+                            leftPadding: 14; rightPadding: 14
+                        }
+                        onClicked: { currentTab = index; reload() }
+                    }
+                }
+            }
+
+            // Count badge
             Rectangle {
                 implicitWidth: countText.implicitWidth + 16
                 implicitHeight: 22
                 radius: 11
-                color: Qt.rgba(0.49, 0.46, 0.90, 0.3)
+                color: md3PrimaryContainer
+
                 Text {
                     id: countText
                     anchors.centerIn: parent
-                    text: listView.count + ""
-                    color: "#a5b4fc"
+                    text: currentTab === 0 ? sessionListView.count + "" : eventListView.count + ""
+                    color: md3Primary
                     font.pixelSize: 11
                     font.bold: true
                 }
@@ -54,29 +97,30 @@ Window {
             Button {
                 implicitWidth: 36; implicitHeight: 32
                 background: Rectangle {
-                    color: parent.hovered ? Qt.rgba(1,1,1,0.12) : Qt.rgba(1,1,1,0.05)
+                    color: parent.hovered ? md3SurfaceContainerHigh : "transparent"
                     radius: 6
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
                 contentItem: Text {
-                    text: "↻"; color: "#a5b4fc"; font.pixelSize: 16
+                    text: "↻"; color: md3Primary; font.pixelSize: 16
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                 }
                 ToolTip.visible: hovered; ToolTip.text: "Reload"
                 onClicked: reload()
             }
+
             // Clear
             Button {
                 implicitWidth: 80; implicitHeight: 32
                 background: Rectangle {
-                    color: parent.hovered ? Qt.rgba(0.86, 0.15, 0.15, 0.5) : Qt.rgba(0.86, 0.15, 0.15, 0.2)
+                    color: parent.hovered ? Qt.rgba(0.95, 0.29, 0.27, 0.3) : Qt.rgba(0.95, 0.29, 0.27, 0.1)
                     radius: 6
-                    border.color: Qt.rgba(0.86, 0.15, 0.15, 0.4)
+                    border.color: Qt.rgba(0.95, 0.29, 0.27, 0.3)
                     border.width: 1
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
                 contentItem: Text {
-                    text: "🗑 Clear"; color: "#fca5a5"; font.pixelSize: 12; font.bold: true
+                    text: "🗑 Clear"; color: md3Error; font.pixelSize: 12; font.bold: true
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                 }
                 onClicked: confirmClearDialog.open()
@@ -85,10 +129,11 @@ Window {
             // Export
             Button {
                 implicitWidth: 90; implicitHeight: 32
+                visible: currentTab === 0
                 background: Rectangle {
-                    color: parent.hovered ? Qt.rgba(0.09, 0.64, 0.37, 0.5) : Qt.rgba(0.09, 0.64, 0.37, 0.2)
+                    color: parent.hovered ? Qt.rgba(0.09, 0.64, 0.37, 0.3) : Qt.rgba(0.09, 0.64, 0.37, 0.1)
                     radius: 6
-                    border.color: Qt.rgba(0.09, 0.64, 0.37, 0.4)
+                    border.color: Qt.rgba(0.09, 0.64, 0.37, 0.3)
                     border.width: 1
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
@@ -103,153 +148,222 @@ Window {
             Button {
                 implicitWidth: 32; implicitHeight: 32
                 background: Rectangle {
-                    color: parent.hovered ? Qt.rgba(1,1,1,0.15) : Qt.rgba(1,1,1,0.05)
+                    color: parent.hovered ? md3SurfaceContainerHigh : "transparent"
                     radius: 6
                     Behavior on color { ColorAnimation { duration: 120 } }
                 }
                 contentItem: Text {
-                    text: "✕"; color: "#999"; font.pixelSize: 14
+                    text: "✕"; color: md3Outline; font.pixelSize: 14
                     horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                 }
                 onClicked: dbWin.close()
             }
         }
 
-        // ── Column headers ──
-        Rectangle {
+        // ══════════════════════════════════════════
+        // TAB 0: Sessions
+        // ══════════════════════════════════════════
+        Item {
             Layout.fillWidth: true
-            height: 28
-            color: Qt.rgba(1, 1, 1, 0.03)
-            radius: 4
+            Layout.fillHeight: true
+            visible: currentTab === 0
 
-            RowLayout {
+            ColumnLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
-                spacing: 0
+                spacing: 4
 
-                Text { text: "#"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 40 }
-                Text { text: "TRANSITION"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 180 }
-                Text { text: "STARTED"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 180 }
-                Text { text: "CYCLE"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 50 }
-                Text { text: "DURATION"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 70 }
-                Text { text: "STATUS"; color: "#666"; font.pixelSize: 11; font.bold: true; Layout.fillWidth: true }
+                // Column headers
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 28
+                    color: md3SurfaceContainer
+                    radius: 4
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        spacing: 0
+
+                        Text { text: "#"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 40 }
+                        Text { text: "TRANSITION"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 180 }
+                        Text { text: "STARTED"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 180 }
+                        Text { text: "CYCLE"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 50 }
+                        Text { text: "DURATION"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 70 }
+                        Text { text: "STATUS"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.fillWidth: true }
+                    }
+                }
+
+                ListView {
+                    id: sessionListView
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    model: []
+                    spacing: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "No session logs yet."
+                        color: md3OutlineVariant
+                        font.pixelSize: 13
+                        visible: sessionListView.count === 0
+                    }
+
+                    delegate: Rectangle {
+                        width: sessionListView.width
+                        height: 30
+                        color: {
+                            var base = index % 2 === 0 ? md3SurfaceContainer : md3Surface
+                            return sHover.containsMouse ? md3SurfaceContainerHigh : base
+                        }
+                        radius: 2
+                        Behavior on color { ColorAnimation { duration: 80 } }
+
+                        MouseArea { id: sHover; anchors.fill: parent; hoverEnabled: true }
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 10; anchors.rightMargin: 10
+                            spacing: 0
+
+                            Text { text: modelData.id; color: md3OutlineVariant; font.pixelSize: 12; font.family: "monospace"; Layout.preferredWidth: 40 }
+                            Text { text: modelData.from_state + " → " + modelData.to_state; color: md3OnSurface; font.pixelSize: 12; Layout.preferredWidth: 180; elide: Text.ElideRight }
+                            Text { text: modelData.started_at; color: md3OnSurfaceVariant; font.pixelSize: 11; font.family: "monospace"; Layout.preferredWidth: 180; elide: Text.ElideRight }
+                            Text { text: modelData.cycle; color: md3Primary; font.pixelSize: 12; font.bold: true; Layout.preferredWidth: 50; horizontalAlignment: Text.AlignHCenter }
+                            Text { text: modelData.duration_seconds + "s"; color: md3OnSurface; font.pixelSize: 12; font.family: "monospace"; Layout.preferredWidth: 70 }
+
+                            Item { Layout.fillWidth: true }
+
+                            Rectangle {
+                                implicitWidth: sLabel.implicitWidth + 16
+                                implicitHeight: 18
+                                radius: 9
+                                color: modelData.completed == 1 ? Qt.rgba(0.09, 0.64, 0.37, 0.2) : Qt.rgba(0.95, 0.29, 0.27, 0.2)
+
+                                Text {
+                                    id: sLabel
+                                    anchors.centerIn: parent
+                                    text: modelData.completed == 1 ? "✓ done" : "✗ skip"
+                                    color: modelData.completed == 1 ? "#4ade80" : md3Error
+                                    font.pixelSize: 10; font.bold: true
+                                }
+                            }
+                        }
+                    }
+
+                    ScrollBar.vertical: ScrollBar { active: true; policy: ScrollBar.AsNeeded }
+                }
             }
         }
 
-        // ── Log list ──
-        ListView {
-            id: listView
+        // ══════════════════════════════════════════
+        // TAB 1: Events
+        // ══════════════════════════════════════════
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            clip: true
-            model: []
-            spacing: 1
+            visible: currentTab === 1
 
-            // Empty state
-            Text {
-                anchors.centerIn: parent
-                text: "No logs yet. Complete a session to see data."
-                color: "#444466"
-                font.pixelSize: 13
-                visible: listView.count === 0
-            }
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 4
 
-            delegate: Rectangle {
-                width: listView.width
-                height: 30
-                color: {
-                    var base = index % 2 === 0 ? Qt.rgba(1,1,1, 0.02) : Qt.rgba(0,0,0, 0.1)
-                    return logHover.containsMouse ? Qt.rgba(0.3, 0.3, 0.6, 0.15) : base
-                }
-                radius: 2
+                // Column headers
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 28
+                    color: md3SurfaceContainer
+                    radius: 4
 
-                Behavior on color { ColorAnimation { duration: 80 } }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        spacing: 0
 
-                MouseArea {
-                    id: logHover
-                    anchors.fill: parent
-                    hoverEnabled: true
+                        Text { text: "#"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 40 }
+                        Text { text: "ACTION"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 120 }
+                        Text { text: "DETAIL"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 240 }
+                        Text { text: "CYCLE"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.preferredWidth: 50 }
+                        Text { text: "TIMESTAMP"; color: md3Outline; font.pixelSize: 11; font.bold: true; Layout.fillWidth: true }
+                    }
                 }
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
-                    spacing: 0
+                ListView {
+                    id: eventListView
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    model: []
+                    spacing: 1
 
-                    // ID
                     Text {
-                        text: modelData.id
-                        color: "#555577"
-                        font.pixelSize: 12
-                        font.family: "monospace"
-                        Layout.preferredWidth: 40
+                        anchors.centerIn: parent
+                        text: "No events yet. Interact with the timer."
+                        color: md3OutlineVariant
+                        font.pixelSize: 13
+                        visible: eventListView.count === 0
                     }
 
-                    // Transition
-                    Text {
-                        text: modelData.from_state + " → " + modelData.to_state
-                        color: "#c0c0e0"
-                        font.pixelSize: 12
-                        Layout.preferredWidth: 180
-                        elide: Text.ElideRight
-                    }
+                    delegate: Rectangle {
+                        width: eventListView.width
+                        height: 30
+                        color: {
+                            var base = index % 2 === 0 ? md3SurfaceContainer : md3Surface
+                            return eHover.containsMouse ? md3SurfaceContainerHigh : base
+                        }
+                        radius: 2
+                        Behavior on color { ColorAnimation { duration: 80 } }
 
-                    // Started at
-                    Text {
-                        text: modelData.started_at
-                        color: "#8888aa"
-                        font.pixelSize: 11
-                        font.family: "monospace"
-                        Layout.preferredWidth: 180
-                        elide: Text.ElideRight
-                    }
+                        MouseArea { id: eHover; anchors.fill: parent; hoverEnabled: true }
 
-                    // Cycle
-                    Text {
-                        text: modelData.cycle
-                        color: "#a5b4fc"
-                        font.pixelSize: 12
-                        font.bold: true
-                        Layout.preferredWidth: 50
-                        horizontalAlignment: Text.AlignHCenter
-                    }
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 10; anchors.rightMargin: 10
+                            spacing: 0
 
-                    // Duration
-                    Text {
-                        text: modelData.duration_seconds + "s"
-                        color: "#e0e0e0"
-                        font.pixelSize: 12
-                        font.family: "monospace"
-                        Layout.preferredWidth: 70
-                    }
+                            Text { text: modelData.id; color: md3OutlineVariant; font.pixelSize: 12; font.family: "monospace"; Layout.preferredWidth: 40 }
 
-                    // Status badge
-                    Rectangle {
-                        implicitWidth: statusLabel.implicitWidth + 12
-                        implicitHeight: 18
-                        radius: 9
-                        color: modelData.completed == 1
-                            ? Qt.rgba(0.09, 0.64, 0.37, 0.2)
-                            : Qt.rgba(0.86, 0.15, 0.15, 0.2)
-                        Layout.fillWidth: true
+                            // Action badge
+                            Rectangle {
+                                implicitWidth: actionLabel.implicitWidth + 12
+                                implicitHeight: 18
+                                radius: 9
+                                Layout.preferredWidth: 120
+                                color: {
+                                    var a = modelData.action
+                                    if (a === "start" || a === "resume") return Qt.rgba(0.09, 0.64, 0.37, 0.2)
+                                    if (a === "pause") return Qt.rgba(0.95, 0.73, 0.13, 0.2)
+                                    if (a === "reset" || a === "skip") return Qt.rgba(0.95, 0.29, 0.27, 0.2)
+                                    if (a === "transition") return Qt.rgba(0.35, 0.42, 0.76, 0.2)
+                                    if (a === "config_save") return Qt.rgba(0.49, 0.46, 0.90, 0.2)
+                                    return Qt.rgba(1,1,1,0.05)
+                                }
 
-                        Text {
-                            id: statusLabel
-                            anchors.centerIn: parent
-                            text: modelData.completed == 1 ? "✓ done" : "✗ skip"
-                            color: modelData.completed == 1 ? "#4ade80" : "#fca5a5"
-                            font.pixelSize: 10
-                            font.bold: true
+                                Text {
+                                    id: actionLabel
+                                    anchors.centerIn: parent
+                                    text: modelData.action
+                                    font.pixelSize: 10; font.bold: true
+                                    color: {
+                                        var a = modelData.action
+                                        if (a === "start" || a === "resume") return "#4ade80"
+                                        if (a === "pause") return "#fde047"
+                                        if (a === "reset" || a === "skip") return md3Error
+                                        if (a === "transition") return "#818cf8"
+                                        if (a === "config_save") return md3Primary
+                                        return md3OnSurfaceVariant
+                                    }
+                                }
+                            }
+
+                            Text { text: modelData.detail || ""; color: md3OnSurface; font.pixelSize: 12; Layout.preferredWidth: 240; elide: Text.ElideRight }
+                            Text { text: modelData.cycle; color: md3Primary; font.pixelSize: 12; font.bold: true; Layout.preferredWidth: 50; horizontalAlignment: Text.AlignHCenter }
+                            Text { text: modelData.timestamp; color: md3OnSurfaceVariant; font.pixelSize: 11; font.family: "monospace"; Layout.fillWidth: true; elide: Text.ElideRight }
                         }
                     }
-                }
-            }
 
-            ScrollBar.vertical: ScrollBar {
-                active: true
-                policy: ScrollBar.AsNeeded
+                    ScrollBar.vertical: ScrollBar { active: true; policy: ScrollBar.AsNeeded }
+                }
             }
         }
 
@@ -257,23 +371,22 @@ Window {
         Rectangle {
             Layout.fillWidth: true
             height: 24
-            color: Qt.rgba(1, 1, 1, 0.02)
+            color: md3SurfaceContainer
             radius: 4
 
             RowLayout {
                 anchors.fill: parent
-                anchors.leftMargin: 10
-                anchors.rightMargin: 10
+                anchors.leftMargin: 10; anchors.rightMargin: 10
 
                 Text {
-                    text: listView.count + " entries"
-                    color: "#555577"
+                    text: (currentTab === 0 ? sessionListView.count : eventListView.count) + " entries"
+                    color: md3OutlineVariant
                     font.pixelSize: 11
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     text: timerBackend ? timerBackend.databasePath() : ""
-                    color: "#444466"
+                    color: md3Outline
                     font.pixelSize: 10
                     font.family: "monospace"
                     elide: Text.ElideMiddle
@@ -293,9 +406,9 @@ Window {
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
         background: Rectangle {
-            color: "#1a1a30"
+            color: md3SurfaceContainer
             radius: 14
-            border.color: Qt.rgba(0.86, 0.15, 0.15, 0.4)
+            border.color: Qt.rgba(0.95, 0.29, 0.27, 0.3)
             border.width: 1
         }
 
@@ -305,15 +418,14 @@ Window {
 
             Text {
                 text: "⚠  Delete all records?"
-                color: "#fca5a5"
-                font.pixelSize: 17
-                font.bold: true
+                color: md3Error
+                font.pixelSize: 17; font.bold: true
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
             }
             Text {
-                text: "This action cannot be undone."
-                color: "#999"
+                text: currentTab === 0 ? "All session records will be deleted." : "All event logs will be deleted."
+                color: md3OnSurfaceVariant
                 font.pixelSize: 13
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -328,12 +440,13 @@ Window {
                     text: "Cancel"
                     implicitWidth: 90; implicitHeight: 34
                     background: Rectangle {
-                        color: parent.hovered ? Qt.rgba(1,1,1,0.12) : Qt.rgba(1,1,1,0.06)
-                        radius: 8
+                        color: parent.hovered ? md3SurfaceContainerHigh : "transparent"
+                        radius: 20
+                        border.color: md3Outline; border.width: 1
                         Behavior on color { ColorAnimation { duration: 120 } }
                     }
                     contentItem: Text {
-                        text: parent.text; color: "#ccc"; font.pixelSize: 13
+                        text: parent.text; color: md3Primary; font.pixelSize: 13
                         horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     }
                     onClicked: confirmClearDialog.close()
@@ -344,7 +457,7 @@ Window {
                     implicitWidth: 110; implicitHeight: 34
                     background: Rectangle {
                         color: parent.hovered ? "#ef4444" : "#dc2626"
-                        radius: 8
+                        radius: 20
                         Behavior on color { ColorAnimation { duration: 120 } }
                     }
                     contentItem: Text {
@@ -352,7 +465,11 @@ Window {
                         horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
                     }
                     onClicked: {
-                        timerBackend.clearHistory()
+                        if (currentTab === 0) {
+                            timerBackend.clearHistory()
+                        } else {
+                            timerBackend.clearEventLogs()
+                        }
                         reload()
                         confirmClearDialog.close()
                         clearNotification.open()
@@ -367,8 +484,7 @@ Window {
         id: clearNotification
         x: (parent.width - width) / 2
         y: parent.height - height - 20
-        width: 240
-        height: 40
+        width: 240; height: 40
         modal: false
         closePolicy: Popup.CloseOnPressOutside
 
@@ -378,12 +494,9 @@ Window {
         }
 
         contentItem: Text {
-            text: "✓  History cleared"
-            color: "#ffffff"
-            font.pixelSize: 13
-            font.bold: true
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+            text: "✓  Records cleared"
+            color: "#ffffff"; font.pixelSize: 13; font.bold: true
+            horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
         }
 
         Timer {
@@ -405,8 +518,8 @@ Window {
     }
 
     function reload() {
-        var data = timerBackend.recentSessionRecords(500)
-        listView.model = data
+        sessionListView.model = timerBackend.recentSessionRecords(500)
+        eventListView.model = timerBackend.recentEventLogs(500)
     }
 
     Component.onCompleted: reload()

@@ -19,11 +19,23 @@ public:
         bool notificationSoundEnabled = true;
         bool transparencyEnabled = false;
         double windowOpacity = 1.0;
+        int fontSize = 14;
         QUrl focusGifSource = QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/focus.gif"));
         QUrl shortBreakGifSource = QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/break.gif"));
         QUrl longBreakGifSource = QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/break.gif"));
         QUrl startGifSource = QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/start.gif"));
         QUrl pauseGifSource = QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/pause.gif"));
+    };
+
+    struct TimerState
+    {
+        bool isFocusMode = true;
+        int currentCycle = 1;
+        int timeLeft = 0;
+        int totalSeconds = 0;
+        QString statusText = QStringLiteral("Work Session");
+        bool running = false;
+        bool paused = false;
     };
 
     struct SessionRecord
@@ -48,6 +60,15 @@ public:
     bool clearSessionRecords(QString *errorMessage = nullptr);
     bool exportSessionRecordsCsv(const QString &path, QString *errorMessage = nullptr) const;
 
+    // Timer state persistence
+    bool saveTimerState(const TimerState &state, QString *errorMessage = nullptr);
+    bool loadTimerState(TimerState *state, QString *errorMessage = nullptr);
+
+    // Event logging
+    bool insertEventLog(const QString &action, const QString &detail, int cycle, QString *errorMessage = nullptr);
+    QVariantList recentEventLogs(int limit = 50, QString *errorMessage = nullptr) const;
+    bool clearEventLogs(QString *errorMessage = nullptr);
+
     QString databasePath() const;
 
 private:
@@ -59,3 +80,4 @@ private:
     QString m_connectionName;
     QString m_databasePath;
 };
+

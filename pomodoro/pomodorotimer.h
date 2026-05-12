@@ -7,6 +7,9 @@
 #include <QtQml/qqmlregistration.h>
 #include <QVariant>
 #include <QVariantList>
+#include <QMenu>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 class QSystemTrayIcon;
 
 #include "pomodorostorage.h"
@@ -34,6 +37,7 @@ class PomodoroTimer : public QObject
     Q_PROPERTY(bool notificationSoundEnabled READ notificationSoundEnabled WRITE setNotificationSoundEnabled NOTIFY notificationSettingsChanged)
     Q_PROPERTY(int notificationDurationMs READ notificationDurationMs CONSTANT)
     Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity NOTIFY windowOpacityChanged)
+    Q_PROPERTY(int fontSize READ fontSize WRITE setFontSize NOTIFY fontSizeChanged)
 
 public:
     explicit PomodoroTimer(QObject *parent = nullptr);
@@ -59,6 +63,8 @@ public:
     int notificationDurationMs() const;
     double windowOpacity() const;
     void setWindowOpacity(double opacity);
+    int fontSize() const;
+    void setFontSize(int size);
 
     Q_INVOKABLE void setFocusDurationSeconds(int seconds);
     Q_INVOKABLE void setShortBreakDurationSeconds(int seconds);
@@ -70,6 +76,9 @@ public:
     Q_INVOKABLE void clearHistory();
     Q_INVOKABLE bool exportHistoryCsv(const QString &path);
     Q_INVOKABLE QVariantList recentSessionRecords(int limit = 20) const;
+    Q_INVOKABLE QVariantList recentEventLogs(int limit = 50) const;
+    Q_INVOKABLE void clearEventLogs();
+    Q_INVOKABLE void saveTimerState();
 
     Q_INVOKABLE void startTimer();
     Q_INVOKABLE void resetTimer();
@@ -86,6 +95,9 @@ signals:
     void appearanceSettingsChanged();
     void notificationSettingsChanged();
     void windowOpacityChanged();
+    void fontSizeChanged();
+    void requestShowWindow();
+    void requestQuit();
 
 private slots:
     void tick();
@@ -100,6 +112,9 @@ private:
     void showNotification(const QString &title, const QString &message);
     void playNotificationSound();
     void persistSessionRecord(const QString &fromState, const QString &toState);
+    void logEvent(const QString &action, const QString &detail);
+    void restoreTimerState();
+    void setupTrayMenu();
 
     QUrl m_focusGifSource;
     QUrl m_shortBreakGifSource;
@@ -116,6 +131,7 @@ private:
     bool m_transparencyEnabled = false;
     bool m_notificationSoundEnabled = true;
     double m_windowOpacity = 1.0;
+    int m_fontSize = 14;
 
     QTimer *m_timer;
     int m_totalSeconds;
@@ -124,6 +140,7 @@ private:
     int m_currentCycle;
 
     QSystemTrayIcon *m_trayIcon = nullptr;
+    QMenu *m_trayMenu = nullptr;
 
     QString m_timeDisplay;
     QString m_statusText;
@@ -132,6 +149,9 @@ private:
 
     bool m_running = false;
     bool m_paused = false;
+
+    QMediaPlayer *m_notificationPlayer = nullptr;
+    QAudioOutput *m_audioOutput = nullptr;
 
     void updateControlButtonText();
 

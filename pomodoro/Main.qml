@@ -13,19 +13,37 @@ Window {
     title: "Pomodoro"
     color: "transparent"
     flags: Qt.FramelessWindowHint | Qt.Window
-    opacity: timerBackend.transparencyEnabled ? timerBackend.windowOpacity : 1.0
 
+    // Minimize to tray instead of quitting
     Connections {
         target: root
         function onClosing(close) {
+            close.accepted = false
+            timerBackend.saveTimerState()
+            root.hide()
             settingsWindow.close()
             dbWindow.close()
-            Qt.quit()
         }
     }
 
     PomodoroTimer {
         id: timerBackend
+    }
+
+    // System tray signals
+    Connections {
+        target: timerBackend
+        function onRequestShowWindow() {
+            root.show()
+            root.raise()
+            root.requestActivate()
+        }
+        function onRequestQuit() {
+            timerBackend.saveTimerState()
+            settingsWindow.close()
+            dbWindow.close()
+            Qt.quit()
+        }
     }
 
     // instantiate separate windows (non-modal)
@@ -40,7 +58,9 @@ Window {
 
         background: Rectangle {
             id: mainBackground
-            color: "#1a1a2e"
+            color: timerBackend.transparencyEnabled
+                ? Qt.rgba(0.106, 0.102, 0.114, timerBackend.windowOpacity)
+                : "#1b1a1d"
             radius: 12
         }
 
@@ -207,14 +227,14 @@ Window {
                             Text {
                                 text: timerBackend.timeDisplay
                                 color: "#ffffff"
-                                font.pixelSize: 48
+                                font.pixelSize: timerBackend.fontSize * 3.4
                                 font.bold: false
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                             Text {
                                 text: timerBackend.statusText
                                 color: "#aaaaaa"
-                                font.pixelSize: 16
+                                font.pixelSize: timerBackend.fontSize * 1.14
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                         }

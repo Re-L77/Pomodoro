@@ -14,6 +14,8 @@
 
 #include <QFile>
 #include <QTextStream>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 PomodoroTimer::PomodoroTimer(QObject *parent)
     : QObject(parent),
@@ -51,14 +53,31 @@ PomodoroTimer::PomodoroTimer(QObject *parent)
     {
         m_trayIcon = new QSystemTrayIcon(this);
         m_trayIcon->setIcon(QApplication::style()->standardIcon(QStyle::SP_ComputerIcon));
+        m_trayIcon->setToolTip(QStringLiteral("Pomodoro Timer"));
+        setupTrayMenu();
         m_trayIcon->show();
+
+        connect(m_trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+            if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick)
+            {
+                emit requestShowWindow();
+            }
+        });
     }
     else
     {
         m_trayIcon = nullptr;
     }
 
+    // Inicializamos el reproductor de audio con el tuturu
+    m_audioOutput = new QAudioOutput(this);
+    m_audioOutput->setVolume(1.0f);
+    m_notificationPlayer = new QMediaPlayer(this);
+    m_notificationPlayer->setAudioOutput(m_audioOutput);
+    m_notificationPlayer->setSource(QUrl(QStringLiteral("qrc:/qt/qml/pomodoro/assets/tuturu_1.mp3")));
+
     reloadConfiguration();
+    restoreTimerState();
 }
 
 // Implementación de los Getters
@@ -87,7 +106,6 @@ void PomodoroTimer::setTransparencyEnabled(bool enabled)
 
     m_transparencyEnabled = enabled;
     emit appearanceSettingsChanged();
-    saveConfiguration();
 }
 
 void PomodoroTimer::setNotificationSoundEnabled(bool enabled)
@@ -99,22 +117,30 @@ void PomodoroTimer::setNotificationSoundEnabled(bool enabled)
 
     m_notificationSoundEnabled = enabled;
     emit notificationSettingsChanged();
-    saveConfiguration();
 }
 
 double PomodoroTimer::windowOpacity() const { return m_windowOpacity; }
 void PomodoroTimer::setWindowOpacity(double opacity)
 {
-    if (m_windowOpacity == opacity)
+    if (qFuzzyCompare(m_windowOpacity, opacity))
     {
         return;
     }
 
     m_windowOpacity = opacity;
     emit windowOpacityChanged();
-    saveConfiguration();
 }
 int PomodoroTimer::notificationDurationMs() const { return m_notificationDurationMs; }
+
+int PomodoroTimer::fontSize() const { return m_fontSize; }
+void PomodoroTimer::setFontSize(int size)
+{
+    if (size < 8) size = 8;
+    if (size > 32) size = 32;
+    if (m_fontSize == size) return;
+    m_fontSize = size;
+    emit fontSizeChanged();
+}
 
 PomodoroStorage::Settings PomodoroTimer::currentSettings() const
 {
@@ -126,6 +152,7 @@ PomodoroStorage::Settings PomodoroTimer::currentSettings() const
     settings.transparencyEnabled = m_transparencyEnabled;
     settings.notificationSoundEnabled = m_notificationSoundEnabled;
     settings.windowOpacity = m_windowOpacity;
+    settings.fontSize = m_fontSize;
     settings.focusGifSource = m_focusGifSource;
     settings.shortBreakGifSource = m_shortBreakGifSource;
     settings.longBreakGifSource = m_longBreakGifSource;
@@ -143,6 +170,7 @@ void PomodoroTimer::applySettings(const PomodoroStorage::Settings &settings)
     m_transparencyEnabled = settings.transparencyEnabled;
     m_notificationSoundEnabled = settings.notificationSoundEnabled;
     m_windowOpacity = settings.windowOpacity;
+    m_fontSize = settings.fontSize;
     m_focusGifSource = settings.focusGifSource;
     m_shortBreakGifSource = settings.shortBreakGifSource;
     m_longBreakGifSource = settings.longBreakGifSource;
@@ -156,6 +184,10 @@ void PomodoroTimer::saveConfiguration()
     if (!m_storage.saveSettings(currentSettings(), &storageError))
     {
         qWarning() << "No se pudo guardar la configuración SQLite:" << storageError;
+    }
+    else
+    {
+        logEvent(QStringLiteral("config_save"), QStringLiteral("Settings saved"));
     }
 }
 
@@ -178,6 +210,7 @@ void PomodoroTimer::reloadConfiguration()
         emit appearanceSettingsChanged();
         emit notificationSettingsChanged();
         emit windowOpacityChanged();
+        emit fontSizeChanged();
         qInfo() << "SQLite database at:" << m_storage.databasePath();
     }
     else
@@ -275,17 +308,27 @@ void PomodoroTimer::startTimer()
         m_timer->stop();
         m_running = false;
         m_paused = true;
+        logEvent(QStringLiteral("pause"), m_statusText);
         updateControlButtonText();
         updateCurrentGifSource();
     }
     else
     {
-        m_timer->start(1000); // Dispara el slot 'tick' cada 1000 milisegundos (1 segundo)
+        if (m_paused)
+        {
+            logEvent(QStringLiteral("resume"), m_statusText);
+        }
+        else
+        {
+            logEvent(QStringLiteral("start"), m_statusText);
+        }
+        m_timer->start(1000);
         m_running = true;
         m_paused = false;
         updateControlButtonText();
         updateCurrentGifSource();
     }
+    saveTimerState();
 }
 
 void PomodoroTimer::resetTimer()
@@ -320,10 +363,13 @@ void PomodoroTimer::resetAll()
     emit currentCycleChanged();
     emit sweepAngleChanged();
     updateControlButtonText();
+    logEvent(QStringLiteral("reset"), QStringLiteral("Full reset"));
+    saveTimerState();
 }
 
 void PomodoroTimer::skipTimer()
 {
+    logEvent(QStringLiteral("skip"), m_statusText + QStringLiteral(" skipped"));
     setNextState();
 }
 
@@ -337,6 +383,12 @@ void PomodoroTimer::tick()
         // Calculamos el ángulo matemático para el anillo
         m_sweepAngle = (static_cast<double>(m_timeLeft) / m_totalSeconds) * 360.0;
         emit sweepAngleChanged();
+
+        // Persist state every 30 seconds to survive crashes
+        if (m_timeLeft % 30 == 0)
+        {
+            saveTimerState();
+        }
     }
     else
     {
@@ -369,6 +421,7 @@ void PomodoroTimer::setNextState()
                                   : QStringLiteral("Work Session");
 
     persistSessionRecord(previousState, nextState);
+    logEvent(QStringLiteral("transition"), previousState + QStringLiteral(" → ") + nextState);
 
     m_timer->stop();
     m_running = false;
@@ -468,7 +521,8 @@ void PomodoroTimer::playNotificationSound()
 {
     if (m_notificationSoundEnabled)
     {
-        QApplication::beep();
+        m_notificationPlayer->setPosition(0);
+        m_notificationPlayer->play();
     }
 }
 
@@ -494,4 +548,103 @@ void PomodoroTimer::updateControlButtonText()
         m_controlButtonText = newText;
         emit controlButtonTextChanged();
     }
+}
+
+void PomodoroTimer::logEvent(const QString &action, const QString &detail)
+{
+    QString storageError;
+    if (!m_storage.insertEventLog(action, detail, m_currentCycle, &storageError))
+    {
+        qWarning() << "Failed to insert event log:" << storageError;
+    }
+}
+
+void PomodoroTimer::saveTimerState()
+{
+    PomodoroStorage::TimerState state;
+    state.isFocusMode = m_isFocusMode;
+    state.currentCycle = m_currentCycle;
+    state.timeLeft = m_timeLeft;
+    state.totalSeconds = m_totalSeconds;
+    state.statusText = m_statusText;
+    state.running = m_running;
+    state.paused = m_paused;
+
+    QString storageError;
+    if (!m_storage.saveTimerState(state, &storageError))
+    {
+        qWarning() << "Failed to save timer state:" << storageError;
+    }
+}
+
+void PomodoroTimer::restoreTimerState()
+{
+    PomodoroStorage::TimerState state;
+    QString storageError;
+    if (!m_storage.loadTimerState(&state, &storageError))
+    {
+        qWarning() << "Failed to load timer state:" << storageError;
+        return;
+    }
+
+    // Only restore if there's a saved state with valid totalSeconds
+    if (state.totalSeconds <= 0)
+    {
+        return;
+    }
+
+    m_isFocusMode = state.isFocusMode;
+    m_currentCycle = state.currentCycle;
+    m_timeLeft = state.timeLeft;
+    m_totalSeconds = state.totalSeconds;
+    m_statusText = state.statusText;
+    // Always restore as paused (never auto-start on relaunch)
+    m_running = false;
+    m_paused = state.running || state.paused;
+
+    updateTimeDisplay();
+    updateControlButtonText();
+    updateCurrentGifSource();
+
+    m_sweepAngle = (static_cast<double>(m_timeLeft) / m_totalSeconds) * 360.0;
+    emit sweepAngleChanged();
+    emit statusTextChanged();
+    emit currentCycleChanged();
+
+    logEvent(QStringLiteral("app_start"), QStringLiteral("State restored from previous session"));
+}
+
+QVariantList PomodoroTimer::recentEventLogs(int limit) const
+{
+    QString storageError;
+    return m_storage.recentEventLogs(limit, &storageError);
+}
+
+void PomodoroTimer::clearEventLogs()
+{
+    QString storageError;
+    if (!m_storage.clearEventLogs(&storageError))
+    {
+        qWarning() << "Failed clearing event logs:" << storageError;
+    }
+}
+
+void PomodoroTimer::setupTrayMenu()
+{
+    m_trayMenu = new QMenu();
+    m_trayMenu->setTitle(QStringLiteral("Pomodoro"));
+
+    QAction *showAction = m_trayMenu->addAction(QStringLiteral("Show Pomodoro"));
+    connect(showAction, &QAction::triggered, this, [this]() {
+        emit requestShowWindow();
+    });
+
+    m_trayMenu->addSeparator();
+
+    QAction *exitAction = m_trayMenu->addAction(QStringLiteral("Exit"));
+    connect(exitAction, &QAction::triggered, this, [this]() {
+        emit requestQuit();
+    });
+
+    m_trayIcon->setContextMenu(m_trayMenu);
 }
